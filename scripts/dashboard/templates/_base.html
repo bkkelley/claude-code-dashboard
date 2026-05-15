@@ -75,6 +75,20 @@
     <span class="nav-icon">▦</span>Decision trees
   </a>
 
+  {# Extension-contributed nav items. nav_extensions is a dict from
+     section name (e.g. "Salesforce") to a list of page entries that
+     installed plugins declared in their dashboard.json. #}
+  {% if nav_extensions %}
+    {% for section, entries in nav_extensions.items() %}
+      <div class="nav-section">{{ section }}</div>
+      {% for entry in entries %}
+        <a href="{{ entry.route }}" class="nav-item" data-nav="{{ entry.id }}">
+          <span class="nav-icon">{{ entry.icon }}</span>{{ entry.title }}
+        </a>
+      {% endfor %}
+    {% endfor %}
+  {% endif %}
+
   <div class="sidebar-footer">
     <a href="/settings" class="nav-item" data-nav="settings">
       <span class="nav-icon">⚙</span>Settings

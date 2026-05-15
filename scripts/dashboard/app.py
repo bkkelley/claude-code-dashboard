@@ -117,8 +117,21 @@ async def host_origin_guard(request: web.Request, handler):
 
 def _shared_context(active: str) -> dict[str, Any]:
     """Context every page needs: counts for the sidebar, active page marker,
-    and the active plugin's branding from .claude-plugin/dashboard.json."""
+    the active plugin's branding, and any plugin-contributed nav entries
+    that the sidebar template should render."""
     m = data.manifest()
+    # Collect extension pages without importing the heavy loader here —
+    # collect_extension_pages just walks manifests, no imports.
+    from . import extensions
+    ext_pages = extensions.collect_extension_pages()
+    nav_extensions: dict[str, list[dict[str, Any]]] = {}
+    for p in ext_pages:
+        nav_extensions.setdefault(p.nav_section, []).append({
+            "id": p.is_active_check,
+            "title": p.title,
+            "icon": p.icon,
+            "route": p.route,
+        })
     return {
         "active": active,
         "agent_count": data.runtime_agent_count(),
@@ -127,6 +140,7 @@ def _shared_context(active: str) -> dict[str, Any]:
         "brand_title": m.get("title", "ka-sfskills"),
         "brand_mark": (m.get("brand") or {}).get("mark", "k"),
         "brand_color": (m.get("brand") or {}).get("color", "#DA7756"),
+        "nav_extensions": nav_extensions,
     }
 
 
@@ -817,6 +831,11 @@ def create_app() -> web.Application:
 
     # Static files
     app.router.add_static("/static/", str(STATIC_DIR), name="static")
+
+    # Plugin extensions — mount last so they can see (but not override)
+    # the dashboard's own routes / templates / static files.
+    from . import extensions
+    extensions.mount_all(app)
 
     return app
 
