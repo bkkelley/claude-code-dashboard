@@ -37,26 +37,16 @@ from . import events as events_mod
 
 
 def _repo_root() -> Path:
-    """Resolve the plugin repo root.
+    """Resolve the dashboard plugin's own install root.
 
-    Prefers ``sfskills_mcp.paths.repo_root()`` if the package is installed
-    (the usual case after ``pip install -e mcp/sfskills-mcp``). Falls back
-    to walking up from this file so the dashboard works in a clean checkout
-    without the MCP install.
+    Always walks up from this file (scripts/dashboard/data.py →
+    scripts/dashboard → scripts → plugin root). The previous
+    implementation preferred sfskills_mcp.paths.repo_root() but that
+    pre-split helper points at the user's ka-sfskills dev clone, not
+    the dashboard plugin's install. Content paths (agents/skills/
+    commands) come from the *active plugin's* root via
+    _active_content_root() — never from this ROOT.
     """
-    try:
-        from sfskills_mcp import paths as _paths
-        return _paths.repo_root()
-    except ImportError:
-        pass
-    cur = Path(__file__).resolve()
-    for _ in range(6):
-        if (cur / "registry" / "skills.json").exists():
-            return cur
-        if cur.parent == cur:
-            break
-        cur = cur.parent
-    # Last-resort default: scripts/dashboard/../.. is the repo root.
     return Path(__file__).resolve().parents[2]
 
 
@@ -332,7 +322,7 @@ def _agents_index() -> list[dict[str, Any]]:
             "category": _classify_agent(entry.name),
             "summary": summary[:300],
             "suggested_skill_count": len(set(suggested)),
-            "path": str(md.relative_to(ROOT)),
+            "path": str(md.relative_to(_active_content_root())),
         })
     return out
 
