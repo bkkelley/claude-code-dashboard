@@ -822,13 +822,41 @@ def create_app() -> web.Application:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="ka-sfskills studio dashboard")
+    parser = argparse.ArgumentParser(description="claude-code-dashboard")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=9000)
+    parser.add_argument(
+        "--migrate-legacy",
+        action="store_true",
+        help="Copy state from ~/.claude/ka-sfskills/ to ~/.claude/dashboard/ "
+             "if any pre-v0.2 files are present. Idempotent and non-destructive.",
+    )
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(message)s")
-    logging.info("ka-sfskills studio dashboard")
+
+    # Migration prompt: if the user has pre-v0.2 state at
+    # ~/.claude/ka-sfskills/ AND no state yet at ~/.claude/dashboard/,
+    # surface the option on every boot until they act. Auto-migrating
+    # would be too magical; --migrate-legacy is the explicit opt-in.
+    from . import paths as paths_mod
+    if paths_mod.has_legacy_state() and not (Path.home() / ".claude" / "dashboard").exists():
+        if args.migrate_legacy:
+            results = paths_mod.migrate_from_legacy()
+            logging.info("legacy state migration:")
+            for name, status in results.items():
+                logging.info("  %-22s %s", name, status)
+        else:
+            logging.warning(
+                "Found legacy dashboard state at %s but no %s. "
+                "Re-run with --migrate-legacy to copy the events log, "
+                "chat sessions, and project list into the new location. "
+                "Until then the dashboard continues to read from the legacy path.",
+                paths_mod.legacy_data_dir(),
+                Path.home() / ".claude" / "dashboard",
+            )
+
+    logging.info("claude-code-dashboard")
     logging.info("  event log: %s", events.EVENT_LOG)
     logging.info("  templates: %s", TEMPLATES_DIR)
     logging.info("  serving:   http://%s:%d", args.host, args.port)

@@ -73,3 +73,57 @@ def legacy_data_dir() -> Path:
     """The pre-v0.2 location; returned so the migration prompt can
     show the user what it's moving."""
     return Path.home() / ".claude" / "ka-sfskills"
+
+
+# Files the migration helper moves. Each name is relative to
+# legacy_data_dir() and lands under data_dir() (the new canonical
+# location) with the same filename.
+MIGRATION_FILES = (
+    "events.jsonl",
+    "chat-sessions.json",
+    "projects.json",
+    "skill_map.json",
+)
+
+
+def has_legacy_state() -> bool:
+    """True iff the legacy ka-sfskills state directory exists and
+    contains at least one file we'd want to migrate."""
+    legacy = legacy_data_dir()
+    if not legacy.is_dir():
+        return False
+    return any((legacy / name).exists() for name in MIGRATION_FILES)
+
+
+def migrate_from_legacy(dry_run: bool = False) -> dict[str, str]:
+    """Copy legacy state into the canonical location.
+
+    Returns a {filename: status} dict where status is one of
+    ``"copied"``, ``"skipped: destination exists"``, or
+    ``"skipped: no source"``. The original legacy files are left in
+    place — the user can ``rm -rf`` them once they've confirmed.
+
+    If ``dry_run`` is True, no files are touched; the same status dict
+    is returned with the planned outcome.
+    """
+    import shutil as _shutil
+    legacy = legacy_data_dir()
+    dest = Path.home() / ".claude" / "dashboard"
+    out: dict[str, str] = {}
+    if not legacy.is_dir():
+        return out
+    if not dry_run:
+        dest.mkdir(parents=True, exist_ok=True)
+    for name in MIGRATION_FILES:
+        src = legacy / name
+        if not src.exists():
+            out[name] = "skipped: no source"
+            continue
+        target = dest / name
+        if target.exists():
+            out[name] = "skipped: destination exists"
+            continue
+        if not dry_run:
+            _shutil.copy2(src, target)
+        out[name] = "copied"
+    return out
