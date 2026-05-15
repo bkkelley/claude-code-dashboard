@@ -1,0 +1,43 @@
+{% extends "_base.html" %}
+{% block title %}{{ tree.title }} · Decision trees · ka-sfskills{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="/static/codemirror/codemirror.min.css?v={{ asset_version() }}">
+<link rel="stylesheet" href="/static/codemirror/dialog.min.css?v={{ asset_version() }}">
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/codemirror/codemirror.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/mode/xml.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/mode/yaml.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/mode/markdown.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/closebrackets.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/matchbrackets.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/dialog.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/searchcursor.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/search.min.js?v={{ asset_version() }}"></script>
+<script defer src="/static/edit.js?v={{ asset_version() }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+  <h1>{{ tree.title }}</h1>
+  <div class="sub" style="font-family: var(--font-mono);">{{ tree.name }} · <a href="/decision-trees" style="color: var(--accent);">← all trees</a></div>
+</div>
+<div style="padding: 0 28px 28px; max-width: 900px;">
+  <div class="panel">
+    <div class="panel-header">
+      <h2>standards/decision-trees/{{ tree.name }}.md</h2>
+      <div class="editor-controls">
+        <span class="editor-status" data-editor-status></span>
+        <button class="btn-secondary" data-editor-cancel type="button" hidden>Cancel</button>
+        <button class="btn-primary" data-editor-save type="button" hidden>Save</button>
+        <button class="btn-secondary" data-editor-edit type="button">Edit source</button>
+      </div>
+    </div>
+    <div class="panel-body" data-editor-host data-edit-kind="decision-tree" data-edit-id="{{ tree.name }}">
+      <textarea data-editor-source>{{ tree.markdown }}</textarea>
+    </div>
+  </div>
+</div>
+{% endblock %}

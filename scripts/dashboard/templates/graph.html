@@ -1,0 +1,314 @@
+{% extends "_base.html" %}
+{% block title %}Graph · ka-sfskills{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Relationship graph</h1>
+  <span class="sub">Agents and the skills they suggest</span>
+  <button class="btn-secondary" id="graph-refresh-btn" type="button" style="margin-left: auto;">Rebuild data</button>
+</div>
+
+<div class="graph-layout">
+  <div class="graph-canvas-wrap">
+    <svg id="graph-svg"></svg>
+
+    <div class="graph-toolbar">
+      <button class="chip active" data-filter="all" type="button">all</button>
+    </div>
+
+    <div class="graph-legend">
+      <h4>Nodes</h4>
+      <div class="graph-legend-row"><span class="dot agent"></span> Agent</div>
+      <div class="graph-legend-row"><span class="dot skill"></span> Skill</div>
+      <div class="graph-legend-row" style="margin-top: 6px; color: var(--text-3); font-size: 10px;">
+        drag · scroll to zoom · click for detail
+      </div>
+    </div>
+
+    <div class="graph-zoom">
+      <button type="button" id="graph-zoom-in">+</button>
+      <button type="button" id="graph-zoom-out">−</button>
+      <button type="button" id="graph-zoom-fit" style="font-size: 11px;">⊕</button>
+    </div>
+
+    <div class="graph-status" id="graph-status">Loading…</div>
+
+    <div class="graph-empty" id="graph-empty" hidden>
+      <div class="icon">⌬</div>
+      <h3>Graph data unavailable</h3>
+      <p id="graph-empty-msg">Run <code>python3 scripts/build_skill_map.py</code> manually, then click <strong>Rebuild data</strong>.</p>
+    </div>
+  </div>
+
+  <aside class="graph-detail" id="graph-detail">
+    <div class="graph-detail-empty">
+      <div class="graph-detail-icon">⌬</div>
+      <p>Click any node for details. Drag the canvas to pan, scroll to zoom.</p>
+      <div style="margin-top: 20px; font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px;">Stats</div>
+      <div id="graph-stats" style="margin-top: 6px;"></div>
+    </div>
+    <div class="graph-detail-card" id="graph-detail-card" hidden></div>
+  </aside>
+</div>
+
+<style>
+.graph-layout {
+  display: flex;
+  height: calc(100vh - 130px);
+  border-top: 1px solid var(--border);
+}
+.graph-canvas-wrap {
+  flex: 1;
+  position: relative;
+  background:
+    radial-gradient(ellipse at center, #F4F2EC 0%, var(--bg) 100%),
+    var(--bg);
+  overflow: hidden;
+}
+#graph-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+#graph-svg:active { cursor: grabbing; }
+.graph-toolbar {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  pointer-events: none;
+}
+.graph-toolbar .chip {
+  pointer-events: auto;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(4px);
+}
+.graph-toolbar .chip.domain { font-family: var(--font-mono); font-size: 11px; }
+.graph-legend {
+  position: absolute;
+  bottom: 18px;
+  left: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 11px;
+  box-shadow: var(--shadow-card);
+}
+.graph-legend h4 {
+  font-size: 10px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.graph-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+  padding: 3px 0;
+}
+.graph-legend-row .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.graph-legend-row .dot.agent { background: var(--text); }
+.graph-legend-row .dot.skill { background: var(--accent); opacity: 0.7; }
+.graph-zoom {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: var(--shadow-card);
+}
+.graph-zoom button {
+  background: transparent;
+  border: none;
+  color: var(--text-2);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.graph-zoom button:hover { background: var(--bg); }
+.graph-status {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px 14px;
+  font-size: 11px;
+  color: var(--text-3);
+  box-shadow: var(--shadow-card);
+}
+.graph-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  color: var(--text-2);
+  text-align: center;
+  padding: 40px;
+}
+/* The `display: flex` above overrides the UA `[hidden] { display: none }`
+   rule, so without this the empty state was visible on every page load —
+   even when graph data loaded fine. */
+.graph-empty[hidden] { display: none; }
+.graph-empty .icon { font-size: 48px; color: var(--text-3); margin-bottom: 12px; }
+.graph-empty h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+.graph-empty p { font-size: 13px; max-width: 420px; }
+
+.graph-detail {
+  width: 320px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  padding: 20px 22px;
+  overflow-y: auto;
+}
+.graph-detail-empty { color: var(--text-2); font-size: 13px; line-height: 1.55; }
+.graph-detail-empty .graph-detail-icon {
+  font-size: 28px;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+.graph-detail-card .badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.graph-detail-card .badge.agent { background: var(--accent-soft); color: var(--accent); }
+.graph-detail-card .badge.skill { background: var(--running-soft); color: var(--running); }
+.graph-detail-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; word-break: break-word; }
+.graph-detail-card .meta { color: var(--text-3); font-size: 12px; margin-bottom: 14px; }
+.graph-detail-card .desc { color: var(--text-2); font-size: 13px; line-height: 1.55; margin-bottom: 16px; }
+.graph-detail-card h3 {
+  font-size: 11px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin: 14px 0 6px;
+  font-weight: 600;
+}
+.graph-detail-card .link-row {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+.graph-detail-card .link-row:hover { background: var(--accent-soft); }
+.graph-detail-card .actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 6px;
+}
+.graph-detail-card .actions a {
+  flex: 1;
+  background: var(--text);
+  color: white;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+}
+.graph-detail-card .actions a.secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+#graph-stats {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+
+/* Graph node styles — set via attributes from JS, here for the static palette. */
+.gnode.agent circle { fill: var(--text); }
+.gnode.agent.running circle { fill: var(--running); }
+.gnode.skill circle { fill: var(--accent); fill-opacity: 0.65; }
+.gnode text {
+  font-size: 9px;
+  fill: var(--text);
+  pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+.gnode.agent text { font-weight: 600; font-size: 10px; }
+.gnode.agent.running circle {
+  filter: drop-shadow(0 0 4px var(--running));
+  animation: gnode-glow 1.5s ease-in-out infinite;
+}
+@keyframes gnode-glow {
+  0%, 100% { filter: drop-shadow(0 0 2px var(--running)); }
+  50%      { filter: drop-shadow(0 0 8px var(--running)); }
+}
+.glink { stroke: rgba(0,0,0,0.10); stroke-width: 0.6; }
+.glink.highlighted { stroke: var(--accent); stroke-width: 1.4; stroke-opacity: 0.8; }
+.gnode.dimmed { opacity: 0.18; }
+.gnode.highlighted text { font-weight: 700; }
+.gnode.selected circle { stroke: var(--accent-strong); stroke-width: 3; }
+.glink.dimmed { stroke-opacity: 0.04; }
+
+/* Domain colors for the agent nodes. */
+.gnode.apex      circle { fill: var(--apex); }
+.gnode.lwc       circle { fill: var(--lwc); }
+.gnode.flow      circle { fill: var(--flow); }
+.gnode.security  circle { fill: var(--security); }
+.gnode.admin     circle { fill: var(--admin); }
+.gnode.audit     circle { fill: var(--audit); }
+.gnode.data      circle { fill: var(--data); }
+.gnode.devops    circle { fill: var(--devops); }
+.gnode.rca       circle { fill: var(--rca); }
+.gnode.agentforce circle { fill: var(--agentforce); }
+.gnode.strategy  circle { fill: var(--strategy); }
+.gnode.skill.apex circle      { fill: var(--apex); fill-opacity: 0.55; }
+.gnode.skill.lwc circle       { fill: var(--lwc); fill-opacity: 0.55; }
+.gnode.skill.flow circle      { fill: var(--flow); fill-opacity: 0.55; }
+.gnode.skill.security circle  { fill: var(--security); fill-opacity: 0.55; }
+.gnode.skill.admin circle     { fill: var(--admin); fill-opacity: 0.55; }
+.gnode.skill.audit circle     { fill: var(--audit); fill-opacity: 0.55; }
+.gnode.skill.data circle      { fill: var(--data); fill-opacity: 0.55; }
+.gnode.skill.devops circle    { fill: var(--devops); fill-opacity: 0.55; }
+.gnode.skill.integration circle { fill: var(--data); fill-opacity: 0.55; }
+.gnode.skill.architect circle { fill: var(--strategy); fill-opacity: 0.55; }
+.gnode.skill.agentforce circle { fill: var(--agentforce); fill-opacity: 0.55; }
+.gnode.skill.omnistudio circle { fill: var(--rca); fill-opacity: 0.55; }
+</style>
+
+<script src="/static/d3.min.js?v={{ asset_version() }}"></script>
+<script src="/static/graph.js?v={{ asset_version() }}"></script>
+{% endblock %}

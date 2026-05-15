@@ -1,0 +1,68 @@
+{% extends "_base.html" %}
+{% block title %}Chat · ka-sfskills{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/marked.min.js?v={{ asset_version() }}"></script>
+<script type="module" src="/static/chat.js?v={{ asset_version() }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="chat-shell" id="chat-shell">
+  <header class="chat-header">
+    <div class="chat-title">
+      <h1>Chat</h1>
+      <span class="chat-meta" id="chat-session-meta">connecting…</span>
+    </div>
+    <div class="chat-controls">
+      <select class="chat-control" id="chat-project" aria-label="Project">
+        <option value="" disabled selected>project…</option>
+      </select>
+      <select class="chat-control" id="chat-mode" aria-label="Permission mode">
+        <option value="bypassPermissions" selected>bypass · v1 default</option>
+        <option value="default">prompt for each tool</option>
+        <option value="acceptEdits">auto-approve edits</option>
+        <option value="plan">plan mode</option>
+      </select>
+      <select class="chat-control" id="chat-model" aria-label="Model">
+        <option value="sonnet" selected>sonnet</option>
+        <option value="opus">opus · expensive</option>
+        <option value="haiku">haiku · cheap</option>
+      </select>
+      <button class="btn-secondary" id="chat-history" type="button"
+              title="Previous conversations" aria-haspopup="listbox" aria-expanded="false">History</button>
+      <button class="btn-secondary" id="chat-new" type="button" title="Start a new chat">New chat</button>
+    </div>
+  </header>
+
+  <div class="chat-history-panel" id="chat-history-panel" hidden role="listbox" aria-label="Previous sessions">
+    <div class="chat-history-empty" data-history-empty>No previous sessions for this project.</div>
+  </div>
+
+  <div class="chat-banner-bypass" id="chat-banner-bypass" hidden>
+    Permissions bypassed — Claude can run any tool without asking. Only use this in trusted directories.
+  </div>
+
+  <div class="chat-messages" id="chat-messages">
+    <div class="chat-empty" id="chat-empty">
+      <h2>Chat with Claude Code</h2>
+      <p>This is a real Claude Code session — same plugins, MCP servers, slash commands, and tools you'd get in your terminal. Pick a project and start typing.</p>
+    </div>
+  </div>
+
+  <form class="chat-composer" id="chat-composer" autocomplete="off">
+    <div class="chat-slash-popup" id="chat-slash-popup" hidden role="listbox"></div>
+    <div class="chat-attachments" id="chat-attachments" hidden aria-label="Attachments"></div>
+    <div class="chat-composer-row">
+      <button class="chat-attach-btn" id="chat-attach-btn" type="button"
+              title="Attach image or file" aria-label="Attach">📎</button>
+      <input class="chat-attach-input" id="chat-attach-input" type="file"
+             accept="image/*,text/*,.md,.txt,.json,.yaml,.yml,.py,.js,.ts,.tsx,.jsx,.html,.css,.cls,.trigger,.apex,.xml,.sql,.sh,.toml"
+             multiple hidden>
+      <textarea class="chat-input" id="chat-input" rows="1"
+                placeholder="Type a message · ⌘↵ to send, ⇧↵ for newline, / for commands"
+                disabled></textarea>
+      <button class="btn-primary" id="chat-send" type="submit" disabled>Send</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

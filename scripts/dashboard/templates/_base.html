@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}{{ brand_title }}{% endblock %}</title>
+<link rel="stylesheet" href="/static/studio.css?v={{ asset_version() }}">
+{% block extra_head %}{% endblock %}
+<script type="module" src="/static/studio.js?v={{ asset_version() }}"></script>
+{% block extra_scripts %}{% endblock %}
+</head>
+<body data-active="{{ active }}"{% if embed %} data-embed="1"{% endif %}>
+
+{% if not embed %}
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-mark" style="background: {{ brand_color }}">{{ brand_mark }}</span>
+    <span class="brand-name">{{ brand_title }}</span>
+  </div>
+
+  <div class="sidebar-plugin-picker" id="sidebar-plugin-picker" hidden>
+    <label class="sidebar-project-label" for="global-plugin">Plugin</label>
+    <select class="sidebar-project-select" id="global-plugin" aria-label="Active plugin">
+      <option value="" disabled selected>loading…</option>
+    </select>
+  </div>
+
+  <div class="sidebar-project-picker">
+    <label class="sidebar-project-label" for="global-project">Project</label>
+    <div class="sidebar-project-row">
+      <select class="sidebar-project-select" id="global-project" aria-label="Active project">
+        <option value="" disabled selected>loading…</option>
+      </select>
+      <button class="sidebar-project-remove" id="global-project-remove" type="button"
+              title="Remove current project from list" aria-label="Remove project">×</button>
+    </div>
+  </div>
+
+  <div class="nav-section">Workspace</div>
+  <a href="/" class="nav-item" data-nav="home">
+    <span class="nav-icon">⌂</span>Home
+  </a>
+  <a href="/agents" class="nav-item" data-nav="agents">
+    <span class="nav-icon">▣</span>Agents
+    <span class="nav-count">{{ agent_count }}</span>
+  </a>
+  <a href="/skills" class="nav-item" data-nav="skills">
+    <span class="nav-icon">⚙</span>Skills
+    <span class="nav-count">{{ skill_count }}</span>
+  </a>
+  <a href="/commands" class="nav-item" data-nav="commands">
+    <span class="nav-icon">/</span>Commands
+    <span class="nav-count">{{ command_count }}</span>
+  </a>
+
+  <div class="nav-section">Work</div>
+  <a href="/chat" class="nav-item" data-nav="chat">
+    <span class="nav-icon">▸</span>Chat
+  </a>
+
+  <div class="nav-section">Monitor</div>
+  <a href="/live" class="nav-item" data-nav="live">
+    <span class="nav-icon">◉</span>Live
+    <span class="nav-running" data-running-count>—</span>
+  </a>
+  <a href="/graph" class="nav-item" data-nav="graph">
+    <span class="nav-icon">⌬</span>Graph
+  </a>
+
+  <div class="nav-section">Discover</div>
+  <a href="/explore" class="nav-item" data-nav="explore">
+    <span class="nav-icon">✦</span>Explore
+  </a>
+  <a href="/decision-trees" class="nav-item" data-nav="decision_trees">
+    <span class="nav-icon">▦</span>Decision trees
+  </a>
+
+  <div class="sidebar-footer">
+    <a href="/settings" class="nav-item" data-nav="settings">
+      <span class="nav-icon">⚙</span>Settings
+    </a>
+    <div class="org-pill" data-org-pill>connecting…</div>
+  </div>
+</aside>
+{% endif %}
+
+<main class="main">
+  {% if not embed %}
+  <header class="topbar">
+    <button class="search-trigger" data-cmdk-open type="button">
+      <span class="search-icon">⌕</span>
+      <span class="search-placeholder">{% block search_placeholder %}Search agents, skills, runs…{% endblock %}</span>
+      <span class="kbd">⌘K</span>
+    </button>
+    <div class="topbar-right">
+      <span class="running-pill" data-running-pill>—</span>
+      <button class="chat-toggle" type="button" data-chat-toggle
+              title="Open chat side panel (⌘\\)" aria-label="Toggle chat">
+        <span class="chat-toggle-icon">◌</span>
+        <span class="chat-toggle-label">Chat</span>
+      </button>
+      <span class="user-avatar" title="local user">B</span>
+    </div>
+  </header>
+
+  <!-- Chat side panel — opt-in, hidden by default. iframe-hosts /chat
+       so the chat component lives in one place. Not rendered when this
+       page is itself the iframe content (embed=1). -->
+  <aside class="chat-panel" id="chat-panel" data-open="false" hidden aria-hidden="true">
+    <header class="chat-panel-header">
+      <span class="chat-panel-title">Chat</span>
+      <a class="chat-panel-expand" href="/chat" target="_top" title="Open full page">↗</a>
+      <button class="chat-panel-close" type="button" data-chat-close
+              title="Close (Esc)" aria-label="Close chat panel">×</button>
+    </header>
+    <iframe class="chat-panel-frame" id="chat-panel-frame" title="Chat"></iframe>
+  </aside>
+  {% endif %}
+
+  <div id="page-content">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<!-- Add-project modal -->
+<div class="modal" id="add-project-modal" hidden>
+  <div class="modal-backdrop" data-add-project-close></div>
+  <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="add-project-title">
+    <h2 class="modal-title" id="add-project-title">Add a project</h2>
+    <p class="modal-hint">Type an absolute path, browse for a folder, or drag one in from Finder.</p>
+    <form class="add-project-form" id="add-project-form">
+      <label class="modal-field-label" for="add-project-path">Path</label>
+      <div class="modal-input-row">
+        <input class="modal-input" id="add-project-path" type="text"
+               placeholder="/Users/you/Documents/my-project" autocomplete="off">
+        <button type="button" class="btn-secondary" id="add-project-native-btn"
+                title="Open your OS's native folder picker">Choose in Finder…</button>
+        <button type="button" class="btn-secondary" id="add-project-browse-btn">Browse…</button>
+      </div>
+
+      <div class="fs-browser" id="add-project-browser" hidden>
+        <div class="fs-browser-header">
+          <button type="button" class="fs-browser-home" id="fs-browser-home" title="Home">⌂</button>
+          <div class="fs-browser-breadcrumb" id="fs-browser-breadcrumb"></div>
+          <button type="button" class="fs-browser-up" id="fs-browser-up" title="Parent">↑</button>
+        </div>
+        <div class="fs-browser-body" id="fs-browser-list">
+          <div class="fs-browser-empty">Loading…</div>
+        </div>
+        <div class="fs-browser-footer">
+          <span class="fs-browser-current" id="fs-browser-current"></span>
+          <button type="button" class="btn-primary" id="fs-browser-use">Use this folder</button>
+        </div>
+      </div>
+
+      <div class="modal-divider"><span>or</span></div>
+      <div class="modal-dropzone" id="add-project-dropzone" tabindex="0"
+           role="button" aria-label="Drop a folder here">
+        <span class="modal-dropzone-icon">📁</span>
+        <span class="modal-dropzone-text">Drag a folder here</span>
+      </div>
+      <div class="modal-error" id="add-project-error" hidden></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" data-add-project-close>Cancel</button>
+        <button type="submit" class="btn-primary" id="add-project-submit">Add project</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Cmd-K modal -->
+<div class="cmdk" id="cmdk" hidden>
+  <div class="cmdk-backdrop" data-cmdk-close></div>
+  <div class="cmdk-modal" role="dialog" aria-modal="true" aria-label="Search">
+    <div class="cmdk-input-row">
+      <span class="cmdk-icon">⌕</span>
+      <input type="text" id="cmdk-input" placeholder="Search agents, skills, commands, decision trees…" autocomplete="off">
+      <span class="kbd">esc</span>
+    </div>
+    <div class="cmdk-body" id="cmdk-body">
+      <div class="cmdk-empty">Start typing to search.</div>
+    </div>
+    <div class="cmdk-footer">
+      <span><span class="kbd">↑</span><span class="kbd">↓</span>navigate</span>
+      <span><span class="kbd">↵</span>open</span>
+      <span><span class="kbd">⌘L</span>jump to live</span>
+      <span><span class="kbd">esc</span>close</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

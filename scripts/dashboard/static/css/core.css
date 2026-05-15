@@ -1,0 +1,72 @@
+/* ka-sfskills · studio dashboard
+ *
+ * Design tokens are CSS custom properties — every component reads from them.
+ * Single light theme with Claude's coral-amber accent.
+ */
+
+:root {
+  --bg: #FAF9F6;
+  --surface: #FFFFFF;
+  --sidebar: #F3F1EB;
+  --border: #EBEAE5;
+  --border-strong: #DCD9D0;
+  --text: #1A1A1A;
+  --text-2: #6B6B6B;
+  --text-3: #999996;
+
+  --accent: #DA7756;
+  --accent-soft: #FBEFE9;
+  --accent-strong: #B85F40;
+
+  --running: #5C8C5E;
+  --running-soft: #ECF3EC;
+
+  --apex: #6366F1;       --apex-soft: #EEF2FF;
+  --lwc: #0EA5E9;        --lwc-soft: #E0F2FE;
+  --flow: #D97706;       --flow-soft: #FEF3C7;
+  --security: #DC2626;   --security-soft: #FEE2E2;
+  --admin: #7C3AED;      --admin-soft: #F3E8FF;
+  --audit: #EA580C;      --audit-soft: #FFEDD5;
+  --data: #0891B2;       --data-soft: #CFFAFE;
+  --strategy: #65A30D;   --strategy-soft: #ECFCCB;
+  --rca: #C026D3;        --rca-soft: #FAE8FF;
+  --devops: #475569;     --devops-soft: #F1F5F9;
+  --agentforce: #DB2777; --agentforce-soft: #FCE7F3;
+  --other: #6B7280;      --other-soft: #F3F4F6;
+
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-hover: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-modal: 0 30px 80px rgba(0,0,0,0.18);
+
+  --font-mono: "JetBrains Mono", "Menlo", "Consolas", "Monaco", monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+body {
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  min-height: 100vh;
+}
+
+/* Embedded mode: this page is rendered inside the chat-panel iframe.
+   Drop the sidebar column so the chat surface fills the panel. */
+body[data-embed="1"] {
+  grid-template-columns: 1fr;
+}
+
+a { color: inherit; text-decoration: none; }
+

@@ -1,0 +1,48 @@
+{% extends "_base.html" %}
+{% block title %}/{{ command.name }} · Commands · ka-sfskills{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="/static/codemirror/codemirror.min.css?v={{ asset_version() }}">
+<link rel="stylesheet" href="/static/codemirror/dialog.min.css?v={{ asset_version() }}">
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/codemirror/codemirror.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/mode/xml.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/mode/yaml.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/mode/markdown.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/closebrackets.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/matchbrackets.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/dialog.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/searchcursor.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/search.min.js?v={{ asset_version() }}"></script>
+<script defer src="/static/edit.js?v={{ asset_version() }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+  <div style="display: flex; align-items: center; gap: 16px;">
+    <div class="card-avatar lwc" style="width: 44px; height: 44px; font-size: 18px;">/</div>
+    <div>
+      <h1 style="margin-bottom: 2px; font-family: var(--font-mono);">/{{ command.name }}</h1>
+      <div class="sub">command · <a href="/commands" style="color: var(--accent);">← all commands</a></div>
+    </div>
+  </div>
+</div>
+<div style="padding: 0 28px 28px; max-width: 900px;">
+  <div class="panel">
+    <div class="panel-header">
+      <h2>commands/{{ command.name }}.md</h2>
+      <div class="editor-controls">
+        <span class="editor-status" data-editor-status></span>
+        <button class="btn-secondary" data-editor-cancel type="button" hidden>Cancel</button>
+        <button class="btn-primary" data-editor-save type="button" hidden>Save</button>
+        <button class="btn-secondary" data-editor-edit type="button">Edit source</button>
+      </div>
+    </div>
+    <div class="panel-body" data-editor-host data-edit-kind="command" data-edit-id="{{ command.name }}">
+      <textarea data-editor-source>{{ command.markdown }}</textarea>
+    </div>
+  </div>
+</div>
+{% endblock %}

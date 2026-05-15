@@ -1,0 +1,19 @@
+/* ka-sfskills · studio dashboard — entry stylesheet.
+ *
+ * This file used to be a single 1800-line dump. It's now an index:
+ * each `@import` pulls in one feature's styles. Add new component
+ * styles into the closest existing file rather than appending here.
+ *
+ * Order matters: `core` defines the design tokens (--accent, --text,
+ * etc.) that every later file reads from.
+ */
+
+@import url("css/core.css");
+@import url("css/sidebar.css");
+@import url("css/topbar.css");
+@import url("css/chrome.css");
+@import url("css/editor.css");
+@import url("css/chat.css");
+@import url("css/cmdk.css");
+@import url("css/modal.css");
+@import url("css/misc.css");

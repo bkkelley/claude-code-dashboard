@@ -1,0 +1,53 @@
+{% extends "_base.html" %}
+{% block title %}Skills · ka-sfskills{% endblock %}
+{% block search_placeholder %}Filter or search skills…{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Skills</h1>
+  <span class="count">{{ skills | length }} of {{ total }} matching</span>
+  {% if search %}<span class="sub">for "<strong>{{ search }}</strong>"</span>{% endif %}
+</div>
+<div class="toolbar">
+  {% for d in domains %}
+    <a class="chip {% if d.slug == selected_domain %}active{% endif %}" href="/skills?domain={{ d.slug }}{% if search %}&q={{ search }}{% endif %}">
+      {{ d.slug }} <span class="count">{{ d.count }}</span>
+    </a>
+  {% endfor %}
+</div>
+<div style="padding: 0 28px 8px;">
+  <form method="get" style="display: flex; gap: 8px; align-items: center;">
+    <input type="hidden" name="domain" value="{{ selected_domain }}">
+    <input type="text" name="q" value="{{ search }}" placeholder="Search by id, name, or description…"
+      style="flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 7px 14px; font-family: inherit; font-size: 13px; color: var(--text); max-width: 540px;">
+    <button class="btn-secondary" type="submit">Search</button>
+  </form>
+</div>
+{% if skills %}
+<div class="grid">
+  {% for s in skills %}
+  <a class="card" href="/skills/{{ s.id | replace('/', '__') }}">
+    <div class="card-head">
+      <div class="card-avatar {{ s.category }}">{{ (s.category or '?')[0] | upper }}</div>
+      <div>
+        <div class="card-title" style="font-family: var(--font-mono); font-size: 12px;">{{ s.id }}</div>
+        <div class="card-domain">{{ s.category }}</div>
+      </div>
+    </div>
+    <div class="card-desc">{{ s.description or "No description." }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% if total > skills | length %}
+<div style="text-align: center; padding: 20px; color: var(--text-3); font-size: 12px;">
+  Showing first {{ skills | length }} of {{ total }}. Refine with the search box or category filter to narrow.
+</div>
+{% endif %}
+{% else %}
+<div class="empty-state">
+  <div class="icon">⚙</div>
+  <h3>No skills match</h3>
+  <p>Try clearing the search or selecting a different domain.</p>
+</div>
+{% endif %}
+{% endblock %}

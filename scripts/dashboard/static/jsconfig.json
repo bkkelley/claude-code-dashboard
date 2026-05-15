@@ -1,0 +1,28 @@
+{
+  "//": "JS type-checking config for VS Code and `tsc --noEmit`. The dashboard frontend is vanilla JS, but JSDoc annotations and the ambient types in types.d.ts give us the same editor smarts a TS codebase has — without a build step.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Node",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "*.js",
+    "*.d.ts",
+    "chat/*.js",
+    "lib/*.js"
+  ],
+  "exclude": [
+    "alpine.min.js",
+    "marked.min.js",
+    "d3.min.js",
+    "codemirror/**"
+  ]
+}

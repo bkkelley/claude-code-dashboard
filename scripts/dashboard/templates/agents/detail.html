@@ -1,0 +1,81 @@
+{% extends "_base.html" %}
+{% block title %}{{ agent.id }} · Agents · ka-sfskills{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="/static/codemirror/codemirror.min.css?v={{ asset_version() }}">
+<link rel="stylesheet" href="/static/codemirror/dialog.min.css?v={{ asset_version() }}">
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/codemirror/codemirror.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/mode/xml.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/mode/yaml.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/mode/markdown.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/closebrackets.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/matchbrackets.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/dialog.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/searchcursor.min.js?v={{ asset_version() }}"></script>
+<script src="/static/codemirror/search.min.js?v={{ asset_version() }}"></script>
+<script defer src="/static/edit.js?v={{ asset_version() }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+  <div style="display: flex; align-items: center; gap: 16px;">
+    <div class="card-avatar {{ agent.category }}" style="width: 44px; height: 44px; font-size: 18px;">{{ agent.id[0] | upper }}</div>
+    <div>
+      <h1 style="margin-bottom: 2px;">{{ agent.id }}</h1>
+      <div class="sub">{{ agent.category }} domain · <a href="/agents" style="color: var(--accent);">← all agents</a></div>
+    </div>
+  </div>
+  {% if agent.summary %}
+  <p style="color: var(--text-2); font-size: 14px; max-width: 760px; line-height: 1.55; margin-top: 6px;">{{ agent.summary }}</p>
+  {% endif %}
+</div>
+
+<div style="padding: 0 28px 28px; display: grid; grid-template-columns: 1fr 320px; gap: 24px;">
+  <div>
+    <div class="panel">
+      <div class="panel-header">
+        <h2>AGENT.md</h2>
+        <div class="editor-controls">
+          <span class="editor-status" data-editor-status></span>
+          <button class="btn-secondary" data-editor-cancel type="button" hidden>Cancel</button>
+          <button class="btn-primary" data-editor-save type="button" hidden>Save</button>
+          <button class="btn-secondary" data-editor-edit type="button">Edit source</button>
+        </div>
+      </div>
+      <div class="panel-body" data-editor-host data-edit-kind="agent" data-edit-id="{{ agent.id }}">
+        <textarea data-editor-source>{{ agent.markdown }}</textarea>
+      </div>
+    </div>
+  </div>
+  <aside>
+    <div class="panel" style="margin-bottom: 16px;">
+      <div class="panel-header"><h2>Suggested skills</h2><span class="meta">{{ agent.suggested_skills | length }}</span></div>
+      <div class="panel-body" style="max-height: 360px; overflow-y: auto;">
+        {% if agent.suggested_skills %}
+          {% for s in agent.suggested_skills[:40] %}
+          <a href="/skills/{{ s | replace('skills/', '') | replace('/', '__') }}" style="display: block; padding: 6px 18px; font-family: var(--font-mono); font-size: 11px; color: var(--accent); border-bottom: 1px solid var(--border); text-decoration: none;">{{ s }}</a>
+          {% endfor %}
+          {% if agent.suggested_skills | length > 40 %}
+          <div style="padding: 8px 18px; color: var(--text-3); font-size: 11px;">+ {{ agent.suggested_skills | length - 40 }} more</div>
+          {% endif %}
+        {% else %}
+        <div style="padding: 14px 18px; color: var(--text-3); font-size: 12px;">No suggested skills listed.</div>
+        {% endif %}
+      </div>
+    </div>
+    {% if agent.templates %}
+    <div class="panel">
+      <div class="panel-header"><h2>Templates</h2><span class="meta">{{ agent.templates | length }}</span></div>
+      <div class="panel-body">
+        {% for t in agent.templates %}
+        <div style="padding: 6px 18px; font-family: var(--font-mono); font-size: 11px; color: var(--text-2); border-bottom: 1px solid var(--border);">{{ t }}</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

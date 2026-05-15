@@ -1,0 +1,25 @@
+{% extends "_base.html" %}
+{% block title %}Settings · ka-sfskills{% endblock %}
+
+{% block content %}
+<div class="page-header"><h1>Settings</h1></div>
+<div style="padding: 0 28px 28px; max-width: 760px;">
+  <div class="panel" style="margin-bottom: 16px;">
+    <div class="panel-header"><h2>Repo</h2></div>
+    <div class="panel-body padded">
+      <table style="width: 100%; font-size: 13px;">
+        <tr><td style="color: var(--text-3); padding: 4px 0; width: 180px;">repo_root</td><td style="font-family: var(--font-mono);">{{ settings.repo_root }}</td></tr>
+        <tr><td style="color: var(--text-3); padding: 4px 0;">registry path</td><td style="font-family: var(--font-mono);">{{ settings.registry_path }} {% if settings.registry_path_exists %}<span style="color: var(--running);">●</span>{% else %}<span style="color: #DC2626;">missing</span>{% endif %}</td></tr>
+        <tr><td style="color: var(--text-3); padding: 4px 0;">event log</td><td style="font-family: var(--font-mono);">{{ settings.event_log }} {% if settings.event_log_exists %}<span style="color: var(--running);">●</span>{% else %}<span style="color: var(--text-3);">not yet written</span>{% endif %}</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><h2>About</h2></div>
+    <div class="panel-body padded">
+      <p style="line-height: 1.6;">This is the new <strong>studio dashboard</strong>. It reads agents, skills, commands, and decision trees directly from disk and tails <code style="font-family: var(--font-mono);">events.jsonl</code> for live activity. No database, no external services.</p>
+      <p style="line-height: 1.6; margin-top: 10px;">To stop the server, use <code>/stop-dashboard</code> in Claude Code or kill the process.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "_base.html" %}
+{% block title %}Agents · ka-sfskills{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Agents</h1>
+  <span class="count">{{ agents | length }} of {{ agent_count }}</span>
+</div>
+<div class="toolbar">
+  {% for c in categories %}
+    <a class="chip {% if c.slug == selected_category %}active{% endif %}" href="/agents?category={{ c.slug }}">
+      {{ c.slug }} <span class="count">{{ c.count }}</span>
+    </a>
+  {% endfor %}
+</div>
+{% if agents %}
+<div class="grid">
+  {% for a in agents %}
+  <a class="card" href="/agents/{{ a.id }}">
+    <div class="card-head">
+      <div class="card-avatar {{ a.category }}">{{ a.id[0] | upper }}</div>
+      <div>
+        <div class="card-title">{{ a.id }}</div>
+        <div class="card-domain">{{ a.category }}</div>
+      </div>
+    </div>
+    <div class="card-desc">{{ a.summary or "No description." }}</div>
+    <div class="card-foot">
+      <span><strong>{{ a.suggested_skill_count }}</strong> suggested skills</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="icon">▣</div>
+  <h3>No agents in this category</h3>
+  <p>Try a different filter or check that <code>agents/</code> contains AGENT.md files with <code>class: runtime</code>.</p>
+</div>
+{% endif %}
+{% endblock %}

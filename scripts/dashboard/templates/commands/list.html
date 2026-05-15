@@ -1,0 +1,32 @@
+{% extends "_base.html" %}
+{% block title %}Commands · ka-sfskills{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Commands</h1>
+  <span class="count">{{ commands | length }}</span>
+  <span class="sub" style="margin-left: 10px;">Slash commands that map onto agents</span>
+</div>
+{% if commands %}
+<div class="grid">
+  {% for c in commands %}
+  <a class="card" href="/commands/{{ c.name }}">
+    <div class="card-head">
+      <div class="card-avatar lwc">/</div>
+      <div>
+        <div class="card-title" style="font-family: var(--font-mono); font-size: 13px;">/{{ c.name }}</div>
+        <div class="card-domain">command</div>
+      </div>
+    </div>
+    <div class="card-desc">{{ c.title }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="icon">/</div>
+  <h3>No commands found</h3>
+  <p>Check that <code>commands/</code> contains <code>.md</code> files.</p>
+</div>
+{% endif %}
+{% endblock %}

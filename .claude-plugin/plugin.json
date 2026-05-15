@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "claude-code-dashboard",
+  "version": "1.0.0",
+  "description": "A local web dashboard for any Claude Code plugin. Browse agents and skills, chat with Claude in a side panel backed by your real claude CLI, autocomplete slash commands, paste images, drag folders from Finder, and watch the event stream live. Plugins opt in by shipping a .claude-plugin/dashboard.json manifest.",
+  "author": {
+    "name": "Blake Kinkade"
+  },
+  "license": "MIT",
+  "keywords": [
+    "dashboard",
+    "chat",
+    "ui",
+    "claude-code",
+    "subagents",
+    "hooks"
+  ],
+  "commands": [
+    "./commands/start-dashboard.md"
+  ]
+}

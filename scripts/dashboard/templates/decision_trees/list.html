@@ -1,0 +1,27 @@
+{% extends "_base.html" %}
+{% block title %}Decision trees · ka-sfskills{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Decision trees</h1>
+  <span class="count">{{ trees | length }}</span>
+  <span class="sub" style="margin-left: 10px;">Routing logic agents consult before they choose an approach</span>
+</div>
+{% if trees %}
+<div class="grid">
+  {% for t in trees %}
+  <a class="card" href="/decision-trees/{{ t.name }}">
+    <div class="card-head">
+      <div class="card-avatar admin">▦</div>
+      <div>
+        <div class="card-title">{{ t.title }}</div>
+        <div class="card-domain" style="font-family: var(--font-mono);">{{ t.name }}</div>
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state"><div class="icon">▦</div><h3>No decision trees yet</h3></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "_base.html" %}
+{% block title %}Live · ka-sfskills{% endblock %}
+
+{% block content %}
+<div class="page-header" style="flex-direction: row;">
+  <div>
+    <h1>Live</h1>
+    <div class="sub">Tailing <code style="font-family: var(--font-mono); font-size: 12px;">~/.claude/ka-sfskills/events.jsonl</code></div>
+  </div>
+  <button class="btn-secondary" style="margin-left: auto; background: var(--running-soft); color: var(--running); border-color: rgba(92,140,94,0.3); font-weight: 600;">● live</button>
+</div>
+<div style="padding: 0 28px 28px;">
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px;">
+    <div class="panel" style="padding: 14px 18px;">
+      <div style="font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px;">Agents running</div>
+      <div style="font-size: 28px; font-weight: 700; font-family: var(--font-mono); color: var(--running);" data-running-count>{{ stats.running }}</div>
+    </div>
+    <div class="panel" style="padding: 14px 18px;">
+      <div style="font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px;">Tool calls (5m)</div>
+      <div style="font-size: 28px; font-weight: 700; font-family: var(--font-mono);">{{ stats.tool_calls_per_5min }}</div>
+    </div>
+    <div class="panel" style="padding: 14px 18px;">
+      <div style="font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px;">Skill reads (1h)</div>
+      <div style="font-size: 28px; font-weight: 700; font-family: var(--font-mono);">{{ stats.skill_reads_per_hour }}</div>
+    </div>
+    <div class="panel" style="padding: 14px 18px;">
+      <div style="font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px;">Completed today</div>
+      <div style="font-size: 28px; font-weight: 700; font-family: var(--font-mono);">{{ stats.completed_today }}</div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+    <div class="panel">
+      <div class="panel-header"><h2>Running now</h2><span class="meta">{{ running | length }} active</span></div>
+      <div class="panel-body">
+        {% if running %}
+          {% for r in running %}
+          <div style="padding: 12px 18px; border-bottom: 1px solid var(--border);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="card-avatar apex" style="width: 28px; height: 28px; font-size: 12px;">{{ r.name[0] | upper }}</div>
+              <div style="font-weight: 600; flex: 1;">{{ r.name }}</div>
+              <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-3);">{{ r.started_at | fmt_ts }}</div>
+            </div>
+            {% if r.description %}
+            <div style="font-size: 12px; color: var(--text-2); margin-top: 6px; margin-left: 38px;">{{ r.description }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+        <div class="empty-state" style="padding: 32px 18px;">
+          <div style="color: var(--text-3); font-size: 13px;">No agents running. Open Claude Code and dispatch an agent — events will stream here in real time.</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><h2>Event stream</h2><span class="meta">live · SSE</span></div>
+      <!--
+        Intentionally empty on first render. ``studio.js`` calls
+        ``/api/recent-events`` on page load to seed the feed, then SSE
+        pushes append in real time. Single source of truth (the JS
+        renderer) avoids the duplicate-event bug where server-rendered
+        initial events stacked with SSE-pushed events.
+      -->
+      <div class="panel-body" style="max-height: 560px; overflow-y: auto;" data-event-feed>
+        <div class="empty-state" style="padding: 24px 18px; font-size: 12px;" data-event-feed-empty>
+          Loading recent events…
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.event-feed-item, [data-event-feed] .event { padding: 9px 18px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); font-size: 12px; }
+[data-event-feed] .event .ts { color: var(--text-3); font-family: var(--font-mono); font-size: 11px; width: 64px; flex-shrink: 0; }
+[data-event-feed] .event .kind-pill { font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 600; text-align: center; width: 56px; flex-shrink: 0; text-transform: uppercase; letter-spacing: .5px; }
+[data-event-feed] .event .what { flex: 1; color: var(--text); word-break: break-word; }
+[data-event-feed] .event.agent .kind-pill { background: var(--accent-soft); color: var(--accent); }
+[data-event-feed] .event.skill .kind-pill { background: var(--running-soft); color: var(--running); }
+[data-event-feed] .event.tool .kind-pill  { background: #EFF6FF; color: #2563EB; }
+[data-event-feed] .event.hook .kind-pill  { background: #F3E8FF; color: #7C3AED; }
+[data-event-feed] .event.slash .kind-pill { background: #FEF3C7; color: #92400E; }
+</style>
+{% endblock %}
